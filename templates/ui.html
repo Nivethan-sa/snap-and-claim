@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Description</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center; /* horizontal center */
+            align-items: center;     /* vertical center */
+            background-color: rgb(238, 233, 233);
+            font-family: Arial, sans-serif;
+        }
+
+        /* --- Image Styling --- */
+        .corner-image {
+            position: absolute;   /* Position relative to the nearest positioned ancestor */
+            top: 50px;            /* Distance from the top */
+            right: 50px;          /* Distance from the right */
+            width: 350px;         /* Fixed width */
+            height: auto;         /* Maintain aspect ratio */
+            border-radius: 20px;  /* Rounded corners */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Soft shadow for depth */
+            pointer-events: none; /* Make image non-interactive */
+        }
+
+        /* --- Main Container for the Form --- */
+        .container {
+            text-align: center;
+        }
+        
+        /* --- Form Box Styling --- */
+        .form-box {
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            width: 500px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .head {
+            margin-bottom: 25px; /* Added more space below the heading */
+            text-align: center;
+            color: black;
+            font-style: oblique;
+            font-size: 30px;
+        }
+
+        /* --- Input and Label Group Styling --- */
+        .group {
+            display: flex;
+            align-items: center; /* Vertically center align label and input */
+            text-align: left;
+            margin-bottom: 25px; /* Increased space between fields */
+        }
+        .group label {
+            font-weight: bold;
+            color: #333;
+            width: 150px; /* Give labels a fixed width for alignment */
+            flex-shrink: 0; /* Prevent label from shrinking */
+            margin-right: 15px; /* Space between label and input */
+        }
+        /* Applied styling to all relevant input types */
+        .group input[type="file"], .group input[type="text"], .group textarea {
+            flex-grow: 1; /* Allow input fields to fill the remaining space */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .group textarea {
+            resize: vertical; /* Allow user to resize textarea height */
+            min-height: 100px; /* Set a minimum height */
+        }
+
+        /* --- Button Styling --- */
+        .form-box button {
+            width: 120px; /* Slightly wider button */
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            margin-top: 10px; /* Reduced top margin */
+            background-color: #007BFF; /* A standard, modern blue */
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+        .form-box button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <img class="corner-image" src="{{ url_for('static', filename='dis.jpg') }}" alt="Description visual">
+
+    <div class="container">
+        <div class="head">
+            <h4>Description</h4>
+        </div>
+        <div class="form-box">
+            <form action="/submit_description" method="POST" enctype="multipart/form-data">
+                <div class="group">
+                    <label for="image_file">Image (JPG/PNG):</label>
+                    <input type="file" id="image_file" name="image_file" accept="image/jpeg, image/png" required>
+                </div>
+                <div class="group">
+                    <label for="registration_number">Registration No:</label>
+                    <input type="text" id="registration_number" name="registration_number" placeholder="Enter registration number..." required>
+                </div>
+                <div class="group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" placeholder="Enter description..." required></textarea>
+                </div>
+                <div>
+                    <button type="submit">Proceed</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

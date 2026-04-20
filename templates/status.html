@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Submission Status</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #222; }
+
+        /* Progress Bar Container */
+        .progress-bar { display: flex; justify-content: space-between; position: relative; margin: 40px 0; }
+        
+        /* The Background Line */
+        .progress-bar::before { content: ''; position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 4px; background-color: #ddd; z-index: 1; }
+        
+        /* The Active Progress Line */
+        .progress-bar .line { 
+            position: absolute; 
+            top: 50%; 
+            left: 0; 
+            transform: translateY(-50%); 
+            height: 4px; 
+            background-color: #28a745; 
+            z-index: 1; 
+            width: 0; 
+            transition: width 0.6s ease-in-out; 
+        }
+
+        /* Dynamic Width Classes */
+        .width-0 { width: 0% !important; }
+        .width-50 { width: 50% !important; }
+        .width-100 { width: 100% !important; }
+
+        .step { position: relative; z-index: 2; text-align: center; flex: 1; }
+        .step .icon { width: 40px; height: 40px; border-radius: 50%; background-color: #ddd; color: white; line-height: 40px; font-size: 20px; margin: 0 auto 10px; border: 3px solid #ddd; transition: all 0.4s; }
+        
+        /* Step States */
+        .step.complete .icon { background-color: #28a745; border-color: #28a745; }
+        .step.active .icon { background-color: #007BFF; border-color: #007BFF; box-shadow: 0 0 10px rgba(0,123,255,0.5); }
+        .step.rejected .icon { background-color: #dc3545; border-color: #dc3545; }
+
+        .submission-details { text-align: left; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        .result-message { padding: 15px; margin-top: 20px; border-radius: 5px; border-left: 5px solid; }
+        .result-message p { margin: 5px 0; font-weight: bold; }
+        
+        .approved-message { background-color: #e8f5e9; border-color: #28a745; color: #155724; }
+        .disapproved-message { background-color: #f8d7da; border-color: #dc3545; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Submission Status</h1>
+        
+        <div class="progress-bar">
+            {% set status = submission.status %}
+            {% set progress_class = "width-0" %}
+            {% if status == 'Under Review' %}{% set progress_class = "width-50" %}
+            {% elif status in ['Approved', 'Rejected'] %}{% set progress_class = "width-100" %}{% endif %}
+            
+            <div class="line {{ progress_class }}"></div>
+
+            <div class="step {% if status in ['Submitted', 'Under Review', 'Approved', 'Rejected'] %}complete{% endif %} {% if status == 'Submitted' %}active{% endif %}">
+                <div class="icon">✔</div>
+                <div class="label">Submitted</div>
+            </div>
+
+            <div class="step {% if status in ['Under Review', 'Approved', 'Rejected'] %}complete{% endif %} {% if status == 'Under Review' %}active{% endif %}">
+                <div class="icon">?</div>
+                <div class="label">Under Review</div>
+            </div>
+
+            <div class="step {% if status == 'Approved' %}complete{% elif status == 'Rejected' %}rejected{% endif %}">
+                <div class="icon">
+                    {% if status == 'Approved' %}✔
+                    {% elif status == 'Rejected' %}✖
+                    {% else %}!
+                    {% endif %}
+                </div>
+                <div class="label">Result</div>
+            </div>
+        </div>
+
+        <div class="submission-details">
+            <h2>Submission Details</h2>
+            <p><strong>Description:</strong> {{ submission.description }}</p>
+            <p><strong>Current Status:</strong> <strong>{{ status | default('N/A') }}</strong></p>
+        
+            {% if status == 'Approved' %}
+                <div class="result-message approved-message">
+                    <p>Your claim has been approved.</p> 
+                    {% if submission.claimAmount %}
+                        <p>The approved amount is <strong>₹{{ submission.claimAmount }}</strong>.</p>
+                    {% endif %}
+                    <p>Visit the showroom for the repair and make use of this claim.</p>
+                </div>
+            {% elif status == 'Rejected' %}
+                 <div class="result-message disapproved-message">
+                    <p>Your claim has been rejected.</p>
+                    <p>Please contact support for more information.</p>
+                 </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

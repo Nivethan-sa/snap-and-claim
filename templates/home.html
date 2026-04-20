@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snap & Claim | A Digital Solution for Insurance Claims</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Poppins:wght@600;700&display=swap');
+
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f8f9fa;
+            --dark-color: #343a40;
+            --light-color: #ffffff;
+            --text-color: #495057;
+            --success-color: #198754;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            color: var(--text-color);
+            background-color: var(--light-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            background-color: var(--light-color);
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .navbar .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .navbar .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            margin-left: 1.5rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar .nav-links a.btn-login {
+            border: 2px solid #dee2e6;
+        }
+        .navbar .nav-links a.btn-login:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .navbar .nav-links a.btn-signup {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            border: 2px solid var(--primary-color);
+        }
+        .navbar .nav-links a.btn-signup:hover {
+            background-color: #004494;
+            border-color: #004494;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            text-align: left;
+            padding: 100px 0;
+            background: linear-gradient(90deg, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 100%), url('https://placehold.co/1200x600/EFEFEF/CCCCCC?text=Damaged+Car');
+            background-size: cover;
+            background-position: right center;
+        }
+
+        .hero-content {
+            max-width: 50%;
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.5rem;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        .hero .btn-main {
+            text-decoration: none;
+            background-color: var(--success-color);
+            color: var(--light-color);
+            padding: 1rem 2.5rem;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: background-color 0.3s;
+        }
+        
+        .hero .btn-main:hover {
+            background-color: #157347;
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            padding: 80px 0;
+            text-align: center;
+            background-color: var(--secondary-color);
+            position: relative;
+        }
+        /* Decorative corner images */
+        .how-it-works::before, .how-it-works::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .how-it-works::before {
+            background-image: url('https://placehold.co/150x150/CCCCCC/FFFFFF?text=Car+Graphic+1');
+            top: 20px;
+            left: 20px;
+        }
+        .how-it-works::after {
+            background-image: url('https://placehold.co/150x150/CCCCCC/FFFFFF?text=Car+Graphic+2');
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .how-it-works h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: var(--dark-color);
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .process-step {
+            background-color: var(--light-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .process-step h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: var(--dark-color);
+            color: #adb5bd;
+        }
+
+        /* Responsive */
+        @media(max-width: 768px) {
+            .hero {
+                text-align: center;
+                background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('https://placehold.co/1200x600/EFEFEF/CCCCCC?text=Damaged+Car');
+                background-size: cover;
+                background-position: center;
+            }
+            .hero-content {
+                max-width: 100%;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="navbar">
+            <a href="{{ url_for('home') }}" class="logo">Snap & Claim</a>
+            <div class="nav-links">
+                <a href="{{ url_for('login') }}" class="btn-login">Login</a>
+                <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
+            </div>
+        </nav>
+    </div>
+
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>The Digital Solution for Your Car Insurance Claims.</h1>
+                <p>Snap & Claim is a user-friendly platform that simplifies the insurance process. Just upload a photo and description to begin, then track your claim's status from start to finish.</p>
+                <a href="{{ url_for('login') }}" class="btn-main">File a Claim Now</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2>Your Claim, Simplified.</h2>
+            <div class="process-grid">
+                <div class="process-step">
+                    <h3>1. Snap & Describe</h3>
+                    <p>Log in to your secure account and submit your claim by uploading photos of the damage and providing a brief description.</p>
+                </div>
+                <div class="process-step">
+                    <h3>2. System Review</h3>
+                    <p>Our system reviews your submission to ensure all details are clear and complete, helping to prepare your claim for faster processing.</p>
+                </div>
+                <div class="process-step">
+                    <h3>3. Track Your Status</h3>
+                    <p>Easily check the real-time status of your claim anytime through your user dashboard, from submission to approval.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; Snap & Claim</p>
+    </footer>
+
+</body>
+</html>
+

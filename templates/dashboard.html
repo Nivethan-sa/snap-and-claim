@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .header { background: #2c3e50; color: white; padding: 15px; text-align: center; font-size: 24px; }
+    .button-container { text-align: center; margin: 20px; }
+    .button-container button { padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; background: #3498db; color: white; }
+    .button-container button:hover { background: #2980b9; }
+    .content { width: 80%; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; cursor: pointer; table-layout: fixed; }
+    table, th, td { border: 1px solid #ddd; word-wrap: break-word; }
+    th, td { padding: 10px; text-align: left; }
+    th { background: #3498db; color: white; }
+    .col-user { width: 15%; }
+    .col-reg { width: 20%; }
+    .col-desc { width: 45%; }
+    .col-status { width: 20%; }
+    .detail { padding: 20px; }
+    .details-container { display: flex; flex-wrap: wrap; gap: 30px; }
+    .details-left { flex: 3; min-width: 300px; }
+    .details-right { flex: 2; min-width: 250px; }
+    .details-left p { margin: 0 0 12px 0; line-height: 1.5; }
+    .description-text { word-wrap: break-word; white-space: pre-wrap; }
+    .image-preview-container { max-width: 100%; overflow: hidden; text-align: center; border: 1px solid #ddd; border-radius: 5px; padding: 10px; box-sizing: border-box; }
+    .image-preview-container img { max-width: 100%; height: auto; display: block; margin: 0 auto; border: none; border-radius: 3px; }
+    .main-actions-container { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+    .action-buttons-left button, .action-buttons-right button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; color: white; }
+    .get-docs { background: #3498db; }
+    .run-err { background: #e67e22; }
+    .approve { background: #2ecc71; }
+    .reject { background: #e74c3c; }
+    .result-area { margin-top: 20px; }
+    .result-text { font-family: monospace; color: #333; font-size: 14px; background: #f0f0f0; padding: 15px; border-radius: 4px; border-left: 4px solid #ccc; }
+    .verdict { padding: 15px; border-radius: 5px; font-size: 1.1em; text-align: center; margin-bottom: 10px; }
+    .analysis-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+    /* Styles for Claim Form */
+    .claim-form-container { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #eee; }
+    .claim-form-container label { font-weight: bold; margin-bottom: 5px; display: block; }
+    .claim-form-container select, .claim-form-container button { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .claim-form-container .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .claim-form-container button { cursor: pointer; background: #3498db; color: white; border-color: #3498db; }
+    .claim-form-container .parts-list { min-height: 50px; max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: white; margin: 15px 0; }
+    .claim-form-container .parts-list div { padding: 5px; border-bottom: 1px solid #f0f0f0; }
+    .claim-form-container .summary-line { font-size: 1.1em; margin-top: 10px; text-align: right; }
+    .claim-form-container .summary-line.final { font-size: 1.2em; font-weight: bold; color: #27ae60; border-top: 1px solid #ddd; padding-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">Admin Dashboard</div>
+  <div class="button-container">
+    <button onclick="showRequests()">Request Came</button>
+    <button onclick="showCompleted()">Completed Request</button>
+  </div>
+  <div class="content" id="content-area">
+    <p>Click a button to view data</p>
+  </div>
+
+  <script>
+      let requests = JSON.parse('{{ pending_requests_json | safe }}');
+    let completed = JSON.parse('{{ completed_requests_json | safe }}');
+    // --- DATABASE WITH PART MATERIAL TYPE FOR DEPRECIATION ---
+    const carPartsDatabase = {
+        'Maruti Suzuki': {
+            'Front Bumper': { price: 4000, type: 'plastic' }, 'Rear Bumper': { price: 3500, type: 'plastic' }, 'Grille': { price: 1500, type: 'plastic' },
+            'Headlight Assembly': { price: 5500, type: 'plastic' }, 'Taillight Assembly': { price: 3000, type: 'plastic' }, 'Fog Lamp': { price: 1200, type: 'plastic' },
+            'Fender': { price: 2800, type: 'metal' }, 'Hood': { price: 7500, type: 'metal' }, 'Trunk Lid': { price: 6500, type: 'metal' },
+            'Front Door Shell': { price: 8000, type: 'metal' }, 'Rear Door Shell': { price: 7500, type: 'metal' }, 'Side Mirror': { price: 2200, type: 'plastic' },
+            'Windshield': { price: 5000, type: 'glass' }, 'Alloy Wheel': { price: 6500, type: 'metal' }, 'Radiator': { price: 6000, type: 'metal' },
+            'Condenser': { price: 4800, type: 'metal' }, 'Control Arm': { price: 1800, type: 'metal' }
+        },
+        'Hyundai': {
+            'Front Bumper': { price: 6000, type: 'plastic' }, 'Rear Bumper': { price: 5500, type: 'plastic' }, 'Grille': { price: 2500, type: 'plastic' },
+            'Headlight Assembly': { price: 9000, type: 'plastic' }, 'Taillight Assembly': { price: 5000, type: 'plastic' }, 'Fender': { price: 4000, type: 'metal' },
+            'Hood': { price: 10000, type: 'metal' }, 'Front Door Shell': { price: 11000, type: 'metal' }, 'Windshield': { price: 7000, type: 'glass' },
+            'Alloy Wheel': { price: 9000, type: 'metal' }, 'Radiator': { price: 8000, type: 'metal' }
+        },
+        'Tata Motors': {
+            'Front Bumper': { price: 5000, type: 'plastic' }, 'Rear Bumper': { price: 4500, type: 'plastic' }, 'Fender': { price: 3500, type: 'metal' },
+            'Hood': { price: 9000, type: 'metal' }, 'Front Door Shell': { price: 10000, type: 'metal' }, 'Windshield': { price: 6500, type: 'glass' },
+            'Alloy Wheel': { price: 8000, type: 'metal' }, 'Radiator': { price: 7500, type: 'metal' }
+        },
+         'Mahindra & Mahindra': {
+            'Front Bumper': { price: 7000, type: 'plastic' }, 'Rear Bumper': { price: 6500, type: 'plastic' }, 'Fender': { price: 5000, type: 'metal' },
+            'Hood': { price: 12000, type: 'metal' }, 'Front Door Shell': { price: 13000, type: 'metal' }, 'Windshield': { price: 7500, type: 'glass' },
+            'Alloy Wheel': { price: 10000, type: 'metal' }, 'Radiator': { price: 9000, type: 'metal' }
+        },
+        'Audi, BMW, Mercedes-Benz': {
+            'Front Bumper': { price: 40000, type: 'plastic' }, 'Rear Bumper': { price: 35000, type: 'plastic' }, 'Fender': { price: 30000, type: 'metal' },
+            'Hood': { price: 90000, type: 'metal' }, 'Front Door Shell': { price: 85000, type: 'metal' }, 'Windshield': { price: 40000, type: 'glass' },
+            'Alloy Wheel': { price: 50000, type: 'metal' }, 'Radiator': { price: 60000, type: 'metal' }
+        }
+    };
+    
+    // --- DISPLAY FUNCTIONS & DETAILS VIEW ---
+    function showRequests() {
+      let table = `<h3>Requests Came</h3><table><thead><tr><th class="col-user">User</th><th class="col-reg">Registration Number</th><th class="col-desc">Description</th><th class="col-status">Status</th></tr></thead><tbody>`;
+      if (requests.length === 0) { table += `<tr><td colspan="4">No pending requests.</td></tr>`; } 
+      else {
+        requests.forEach(r => {
+          table += `<tr onclick="showDetails('${r._id.$oid}', 'requests')"><td>${r.username}</td><td>${r['Registration Number'] || 'NA'}</td><td>${r.description}</td><td>${r.status}</td></tr>`;
+        });
+      }
+      table += "</tbody></table>";
+      document.getElementById("content-area").innerHTML = table;
+    }
+
+    function showCompleted() {
+      let table = `<h3>Completed Requests</h3><table><thead><tr><th class="col-user">User</th><th class="col-reg">Registration Number</th><th class="col-desc">Description</th><th class="col-status">Status</th></tr></thead><tbody>`;
+      if (completed.length === 0) { table += `<tr><td colspan="4">No completed requests.</td></tr>`; }
+      else {
+        completed.forEach(r => {
+          table += `<tr onclick="showDetails('${r._id.$oid}', 'completed')"><td>${r.username}</td><td>${r['Registration Number'] || 'N/A'}</td><td>${r.description}</td><td>${r.status}</td></tr>`;
+        });
+      }
+      table += "</tbody></table>";
+      document.getElementById("content-area").innerHTML = table;
+    }
+
+    async function showDetails(id, type) {
+        const data = type === "requests" ? requests : completed;
+        const req = data.find(r => r._id.$oid === id);
+        if (!req) return;
+
+        if (req.status === 'Submitted') {
+            try {
+                const response = await fetch(`/mark_as_under_review/${id}`, { method: 'POST' });
+                if (response.ok) { req.status = 'Under Review'; }
+            } catch (error) { console.error('Failed to mark as under review:', error); }
+        }
+
+        let imageHtml = req.image_filename ? `<div class="image-preview-container"><b>Image Preview:</b><br><img src="/static/uploads/${req.image_filename}" alt="User Submission"></div>` : `<p><b>Image:</b> No image was submitted.</p>`;
+        let approvalButtonsHtml = type === 'requests' ? `<div class="action-buttons-right"><button class="approve" onclick="approve('${req._id.$oid}')">Approve</button><button class="reject" onclick="reject('${req._id.$oid}')">Reject</button></div>` : '';
+        
+        document.getElementById("content-area").innerHTML = `
+        <div class="detail">
+          <h3>Request Details</h3>
+          <div class="details-container"> <div class="details-left"> <p><b>User:</b> ${req.username}</p> <p><b>Registration No:</b> ${req['Registration Number'] || 'N/A'}</p> <p><b>Status:</b> ${req.status}</p> <p><b>Description:</b><br><span class="description-text">${req.description}</span></p> <div class="main-actions-container"> <div class="action-buttons-left"> <button class="get-docs" onclick="getDocuments('${req['Registration Number'] || ''}', '${req._id.$oid}')">Get Documents</button> <button class="run-err" onclick="runAdvancedAnalysis('${req.image_filename || ''}', '${req._id.$oid}')">Forensic Analysis</button> </div> ${approvalButtonsHtml} </div> </div> <div class="details-right">${imageHtml}</div> </div>
+          <div class="result-area"> <div id="docs-result-${req._id.$oid}" class="result-text" style="display:none;"></div> <div id="err-result-${req._id.$oid}" class="result-text" style="display:none;"></div> </div>
+          <div style="text-align:center; margin-top:30px;"><button onclick="${type === 'requests' ? 'showRequests()' : 'showCompleted()'}">⬅ Back to List</button></div>
+        </div>`;
+    }
+    
+    // --- INSURANCE CLAIM CALCULATION FLOW ---
+    let finalPayableAmount = 0;
+    let selectedPartsForClaim = {};
+
+    function getClaimAmount(id) {
+        const req = requests.find(r => r._id.$oid === id);
+        if (!req) return;
+
+        finalPayableAmount = 0;
+        selectedPartsForClaim = {};
+        
+        const currentCarCompany = req['Car Company'] || Object.keys(carPartsDatabase)[0];
+
+        let companyOptionsHtml = '';
+        for (const company in carPartsDatabase) {
+            companyOptionsHtml += `<option value="${company}" ${company === currentCarCompany ? 'selected' : ''}>${company}</option>`;
+        }
+        
+        const ageOptions = ['0-6 months', '6-12 months', '1-2 years', '2-3 years', '3-4 years', '4-5 years', '5-10 years', '10+ years'];
+        let ageOptionsHtml = ageOptions.map(age => `<option value="${age}">${age}</option>`).join('');
+
+        const formHtml = `
+        <div class="claim-form-container">
+          <h3>Calculate Insurance Claim for ${req.username}</h3>
+          <div class="form-grid">
+            <div>
+              <label for="car-company-selector">Car Company:</label>
+              <select id="car-company-selector" onchange="updatePartsList()">${companyOptionsHtml}</select>
+            </div>
+            <div>
+              <label for="vehicle-age-selector">Vehicle Age:</label>
+              <select id="vehicle-age-selector" onchange="recalculateClaim()">${ageOptionsHtml}</select>
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            <label for="damage-part-selector">Select Damaged Part:</label>
+            <div style="display: flex; gap: 10px;">
+                <select id="damage-part-selector" style="flex-grow: 1;"></select>
+                <button onclick="addPartToClaim()">Add Part</button>
+            </div>
+          </div>
+          <div class="parts-list" id="selected-parts-list">
+            <h4>Selected Parts:</h4>
+            <div id="parts-placeholder">No parts added yet.</div>
+          </div>
+          <div id="claim-summary">
+             <div class="summary-line">Total Parts Cost: ₹<span id="total-parts-cost">0</span></div>
+             <div class="summary-line">Total Depreciation (-): ₹<span id="total-depreciation">0</span></div>
+             <div class="summary-line">Compulsory Deductible (-): ₹1,000</div>
+             <div class="summary-line final">Final Payable Claim: ₹<span id="payable-claim-amount">0</span></div>
+          </div>
+          <div style="text-align: right; margin-top: 20px;">
+            <button class="approve" onclick="finalizeApproval('${id}')">Finalize Approval</button>
+            <button onclick="showDetails('${id}', 'requests')">Cancel</button>
+          </div>
+        </div>`;
+        document.getElementById("content-area").innerHTML = formHtml;
+        updatePartsList();
+        recalculateClaim();
+    }
+
+    function updatePartsList() {
+        const company = document.getElementById('car-company-selector').value;
+        const partsSelect = document.getElementById('damage-part-selector');
+        const parts = carPartsDatabase[company] || {};
+        
+        partsSelect.innerHTML = '';
+        for (const partName in parts) {
+            const price = parts[partName].price;
+            partsSelect.innerHTML += `<option value="${partName}">${partName} - ₹${price.toLocaleString('en-IN')}</option>`;
+        }
+        recalculateClaim();
+    }
+
+    function addPartToClaim() {
+        const company = document.getElementById('car-company-selector').value;
+        const partName = document.getElementById('damage-part-selector').value;
+        const partData = carPartsDatabase[company][partName];
+
+        if (partName && partData) {
+            if (selectedPartsForClaim[partName]) {
+                alert(`'${partName}' has already been added.`);
+                return;
+            }
+            
+            selectedPartsForClaim[partName] = partData;
+            document.getElementById('parts-placeholder').style.display = 'none';
+            const partsListDiv = document.getElementById('selected-parts-list');
+            const newPartDiv = document.createElement('div');
+            newPartDiv.id = `part-${partName.replace(/\s+/g, '-')}`;
+            newPartDiv.innerHTML = `${partName}: ₹${partData.price.toLocaleString('en-IN')} <span onclick="removePart('${partName}')" style="color:red; cursor:pointer; float:right;">[Remove]</span>`;
+            partsListDiv.appendChild(newPartDiv);
+            
+            recalculateClaim();
+        }
+    }
+    
+    function removePart(partName) {
+        if(selectedPartsForClaim[partName]) {
+            delete selectedPartsForClaim[partName];
+            const partElement = document.getElementById(`part-${partName.replace(/\s+/g, '-')}`);
+            if(partElement) partElement.remove();
+            if (Object.keys(selectedPartsForClaim).length === 0) {
+                 document.getElementById('parts-placeholder').style.display = 'block';
+            }
+            recalculateClaim();
+        }
+    }
+
+    function getDepreciationRate(partType, ageString) {
+        if (partType === 'plastic') return 0.50; // 50% for plastic/rubber
+        if (partType === 'glass') return 0; // 0% for glass
+
+        if (partType === 'metal') {
+            switch(ageString) {
+                case '0-6 months': return 0;
+                case '6-12 months': return 0.05; // 5%
+                case '1-2 years': return 0.10; // 10%
+                case '2-3 years': return 0.15; // 15%
+                case '3-4 years': return 0.25; // 25%
+                case '4-5 years': return 0.35; // 35%
+                case '5-10 years': return 0.40; // 40%
+                case '10+ years': return 0.50; // 50%
+                default: return 0;
+            }
+        }
+        return 0;
+    }
+    
+    function recalculateClaim() {
+        const age = document.getElementById('vehicle-age-selector').value;
+        let totalPartsCost = 0;
+        let totalDepreciation = 0;
+        const compulsoryDeductible = 1000;
+
+        for(const partName in selectedPartsForClaim) {
+            const part = selectedPartsForClaim[partName];
+            totalPartsCost += part.price;
+            const depreciationRate = getDepreciationRate(part.type, age);
+            totalDepreciation += part.price * depreciationRate;
+        }
+
+        const claimAfterDepreciation = totalPartsCost - totalDepreciation;
+        finalPayableAmount = Math.max(0, claimAfterDepreciation - compulsoryDeductible);
+        
+        document.getElementById('total-parts-cost').textContent = totalPartsCost.toLocaleString('en-IN');
+        document.getElementById('total-depreciation').textContent = Math.round(totalDepreciation).toLocaleString('en-IN');
+        document.getElementById('payable-claim-amount').textContent = Math.round(finalPayableAmount).toLocaleString('en-IN');
+    }
+
+    function finalizeApproval(id) {
+        if (Object.keys(selectedPartsForClaim).length === 0) {
+            alert("Please add at least one damaged part to approve the claim.");
+            return;
+        }
+        updateStatus(id, 'Approved', Math.round(finalPayableAmount));
+    }
+    
+    // --- BACKEND COMMUNICATION & ACTION TRIGGERS ---
+    async function updateStatus(id, newStatus, claimAmount = null) {
+      try {
+        const response = await fetch(`/update_status/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus, claimAmount: claimAmount })
+        });
+        const result = await response.json();
+        if (result.success) {
+          const index = requests.findIndex(r => r._id.$oid === id);
+          if (index > -1) {
+            const [movedItem] = requests.splice(index, 1);
+            movedItem.status = newStatus;
+            if (claimAmount != null) { movedItem.claimAmount = claimAmount; }
+            completed.push(movedItem);
+            showCompleted();
+            alert(`Request has been successfully ${newStatus.toLowerCase()}.`);
+          }
+        } else {
+          alert(`Error: ${result.error || 'Could not update status.'}`);
+        }
+      } catch (error) {
+        alert('A network error occurred. Please try again.');
+      }
+    }
+
+    function approve(id) { getClaimAmount(id); }
+    function reject(id) { 
+        if (confirm('Are you sure you want to reject this claim?')) {
+            updateStatus(id, 'Rejected'); 
+        }
+    }
+
+    // --- FULLY RESTORED ANALYSIS FUNCTIONS ---
+    async function getDocuments(regNum, reqId) {
+        const resultDiv = document.getElementById(`docs-result-${reqId}`);
+        const errResultDiv = document.getElementById(`err-result-${reqId}`);
+        errResultDiv.style.display = 'none';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = "<small>Fetching documents...</small>";
+
+        if (!regNum) {
+            resultDiv.innerHTML = "<strong>Error:</strong> No registration number available.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`/get_documents/${regNum}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                if (result.length === 0) {
+                    resultDiv.innerHTML = "<strong>Result:</strong> No matching documents found.";
+                    return;
+                }
+                let documentsHtml = '<strong>Found Documents:</strong>';
+                result.forEach(doc => {
+                    documentsHtml += '<ul class="analysis-box" style="margin-top: 10px;">';
+                    for (const key in doc) {
+                        if (Object.hasOwnProperty.call(doc, key) && key !== '_id') {
+                            documentsHtml += `<li><b>${key}:</b> ${doc[key]}</li>`;
+                        }
+                    }
+                    documentsHtml += '</ul>';
+                });
+                resultDiv.innerHTML = documentsHtml;
+            } else {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${result.message || 'An error occurred.'}`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = "<strong>Error:</strong> Could not connect to server.";
+        }
+    }
+
+    async function runAdvancedAnalysis(filename, reqId) {
+        const resultDiv = document.getElementById(`err-result-${reqId}`);
+        const docsResultDiv = document.getElementById(`docs-result-${reqId}`);
+        docsResultDiv.style.display = 'none';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = "<small>Performing advanced image analysis... This may take a moment.</small>";
+
+        if (!filename) {
+            resultDiv.innerHTML = "<strong>Error:</strong> No image submitted for this request.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`/advanced_analysis/${filename}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                let verdictColor = '#7f8c8d';
+                if (result.final_verdict.status === 'Authentic') verdictColor = '#27ae60';
+                if (result.final_verdict.status.includes('Tampered')) verdictColor = '#c0392b';
+
+                const createMapHtml = (mapData, title) => {
+                    let url = mapData ? (mapData.map_url || mapData.heatmap_url) : null;
+                    if (url) {
+                        return `<div class="analysis-map"><b>${title}:</b><br><a href="${url}" target="_blank"><img src="${url}" alt="${title}"></a></div>`;
+                    }
+                    return '';
+                };
+                
+                let elaMapHtml = createMapHtml(result.ela_analysis, 'ELA Heatmap');
+                let noiseMapHtml = createMapHtml(result.noise_analysis, 'Noise Map');
+
+                let resultHtml = `
+                    <div class="verdict" style="background-color: ${verdictColor}; color: white;">
+                        <b>Final Verdict: ${result.final_verdict.status}</b> (Confidence: ${result.final_verdict.confidence})
+                    </div>
+                    <p style="text-align: center; font-size: 0.9em; margin-bottom: 20px;"><em>${result.final_verdict.summary}</em></p>
+                    
+                    <div class="analysis-container">
+                        <div class="analysis-box">
+                            <h4>EXIF Metadata</h4>
+                            <ul>
+                                <li><b>Status:</b> ${result.exif_analysis.status}</li>
+                                <li><b>Details:</b> ${result.exif_analysis.details}</li>
+                            </ul>
+                        </div>
+                        <div class="analysis-box">
+                            <h4>Statistical ELA</h4>
+                            <ul>
+                                <li><b>Status:</b> ${result.ela_analysis.status}</li>
+                                <li><b>Details:</b> ${result.ela_analysis.details}</li>
+                            </ul>
+                            ${elaMapHtml}
+                        </div>
+                         <div class="analysis-box">
+                            <h4>Copy-Move Forgery</h4>
+                            <ul>
+                                <li><b>Status:</b> ${result.cmfd_analysis.status}</li>
+                                <li><b>Details:</b> ${result.cmfd_analysis.details}</li>
+                            </ul>
+                        </div>
+                        <div class="analysis-box">
+                            <h4>Noise Analysis</h4>
+                            <ul>
+                                <li><b>Status:</b> ${result.noise_analysis.status}</li>
+                                <li><b>Details:</b> ${result.noise_analysis.details}</li>
+                            </ul>
+                            ${noiseMapHtml}
+                        </div>
+                    </div>
+                `;
+                resultDiv.innerHTML = resultHtml;
+            } else {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'Could not perform analysis.'}`;
+            }
+        } catch (error) {
+            console.error("Error during analysis fetch:", error);
+            resultDiv.innerHTML = "<strong>Error:</strong> An error occurred while displaying results. Could not connect to the server.";
+        }
+    }
+  </script>
+</body>
+</html>
